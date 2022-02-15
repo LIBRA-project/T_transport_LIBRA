@@ -31,18 +31,23 @@ bounding_box = geometry.corners()
 t_prod = odw.MeshTally2D(tally_type="(n,Xt)", plane="xz", bounding_box=bounding_box)
 t_prod.name = "(n,Xt)_regular"
 
-t_prod_cyl = openmc.Tally(name="(n,Xt)_cylindrical")
-t_prod_cyl.scores = ["(n,Xt)"]
 cylindrical_mesh = openmc.CylindricalMesh()
 cylindrical_mesh.r_grid = np.linspace(bounding_box[0][0], bounding_box[1][0], num=400)
 cylindrical_mesh.phi_grid = [0, math.pi/2]
 cylindrical_mesh.z_grid = np.linspace(bounding_box[0][2], bounding_box[1][2], num=400)
+
+t_prod_cyl = openmc.Tally(name="(n,Xt)_cylindrical")
+t_prod_cyl.scores = ["(n,Xt)"]
 t_prod_cyl.filters.append(openmc.MeshFilter(cylindrical_mesh))
+
+heating_cyl = openmc.Tally(name="heating_cylindrical")
+heating_cyl.scores = ["heating"]
+heating_cyl.filters.append(openmc.MeshFilter(cylindrical_mesh))
 
 heating = odw.MeshTally2D(tally_type="heating", plane="yz", bounding_box=bounding_box)
 tbr = odw.CellTally(tally_type="TBR")
 
-tallies = openmc.Tallies([t_prod, t_prod_cyl, heating, tbr])
+tallies = openmc.Tallies([t_prod, t_prod_cyl, heating, tbr, heating_cyl])
 
 # settings
 settings = odw.FusionSettings()

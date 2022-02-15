@@ -2,6 +2,8 @@ import openmc
 from regular_mesh_plotter import plot_regular_mesh_tally_with_geometry
 from openmc_mesh_tally_to_vtk import write_mesh_tally_to_vtk
 
+import write_cylindrical_to_vtk
+
 # can be used to scale the color scale
 from matplotlib.colors import LogNorm
 
@@ -11,9 +13,11 @@ statepoint_file = "statepoint.4.h5"
 # loads up the statepoint file with simulation results
 statepoint = openmc.StatePoint(filepath=statepoint_file)
 
-t_prod = statepoint.get_tally(name="(n,Xt)_on_2D_mesh_xz")
+t_prod = statepoint.get_tally(name="(n,Xt)_regular")
 heating = statepoint.get_tally(name="heating_on_2D_mesh_yz")
 tbr = statepoint.get_tally(name="TBR")
+
+t_prod_cyl = statepoint.get_tally(name="(n,Xt)_cylindrical")
 
 print("The TBR is {}".format(tbr.mean))
 print("The TBR std dev is {}".format(tbr.std_dev))
@@ -50,10 +54,16 @@ plot_regular_mesh_tally_with_geometry(
 )
 
 
+write_cylindrical_to_vtk.write_mesh_tally_to_vtk(
+    tally=t_prod_cyl,
+    filename = "t_production_cylindrical.vtk",
+)
+
 write_mesh_tally_to_vtk(
     tally=t_prod,
-    filename = "t_production.vtk",
+    filename = "t_production_regular.vtk",
 )
+
 write_mesh_tally_to_vtk(
     tally=heating,
     filename = "heating.vtk",

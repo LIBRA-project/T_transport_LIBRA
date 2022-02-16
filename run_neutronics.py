@@ -53,7 +53,7 @@ tallies = openmc.Tallies([t_prod, t_prod_cyl, heating, tbr, heating_cyl])
 settings = odw.FusionSettings()
 settings.batches = 4
 settings.particles = 1000
-settings.source = ops.FusionPointSource(fuel="DT", coordinate=(5, 5, 50))
+settings.source = ops.FusionPointSource(fuel="DT", coordinate=(0.1, 0.1, 66))
 
 
 my_model = openmc.Model(

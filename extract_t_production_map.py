@@ -15,7 +15,7 @@ def reshape_values_to_mesh_shape(tally, values):
     # 2d mesh has a shape in the form [1, 400, 400]
     if 1 in shape:
         shape.remove(1)
-    return values.reshape(shape)
+    return values.reshape(shape[::-1])
 
 def get_tally_extent(tally):
 

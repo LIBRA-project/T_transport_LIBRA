@@ -15,17 +15,16 @@ flibe_thickness = 0.5*1e2
 
 inner_radius_lead = 0.1*1e2
 lead_thickness = 0.05*1e2
-height_lead = 0.6*1e2 + height_gas
+height_lead = 0.6*1e2
 
 
 # construction
 height_tank = height_flibe + 2*(2*thickness_inner_tank_wall + thickness_sweep_gas) + height_gas
 
-
 lead_inner = (
     cq.Workplane("XY")
-    .workplane(offset=height_tank - height_lead/2 + lead_thickness)
-    .cylinder(height_lead, inner_radius_lead, angle=rotation_angle)
+    .workplane(offset=height_lead + lead_thickness)
+    .cylinder(height_tank - height_lead - 2*lead_thickness, inner_radius_lead, angle=rotation_angle, centered=(True, True, False))
     )
 
 lead = (
@@ -41,8 +40,8 @@ gas = (
 height_flibe_cutter = height_lead + 2*thickness_inner_tank_wall + thickness_sweep_gas
 thickness_flibe_cutter = inner_radius_lead + lead_thickness + 2*thickness_inner_tank_wall + thickness_sweep_gas
 flibe_cutter_1 = (
-    cq.Workplane("XY").workplane(offset=height_tank - height_lead/2 - thickness_inner_tank_wall - thickness_sweep_gas/2)
-    .cylinder(height_flibe_cutter, thickness_flibe_cutter, angle=rotation_angle)
+    cq.Workplane("XY").workplane(offset=height_lead - 2*thickness_inner_tank_wall - thickness_sweep_gas)
+    .cylinder(height_flibe_cutter, thickness_flibe_cutter, angle=rotation_angle, centered=(True, True, False))
 )
 
 thickness_flibe_cutter2 = 1.5 + 2*thickness_inner_tank_wall + thickness_sweep_gas
@@ -78,6 +77,7 @@ outer_tank_wall = (
 )
 
 
+# cutters for 90 segment
 cutter_x_zero = (
     cq.Workplane("XZ")
     .workplane(offset=500/2)    

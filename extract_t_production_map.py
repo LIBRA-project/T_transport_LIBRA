@@ -45,12 +45,17 @@ def get_tally_extent(tally):
         index_of_1d = shape.index(1)
         print("index", index_of_1d)
         if index_of_1d == 0:
-            return extent_y + extent_z
+            (left, right) = extent_y
+            (bottom, top) = extent_z
         if index_of_1d == 1:
-            return extent_x + extent_z
+            (left, right) = extent_x
+            (bottom, top) = extent_z
         if index_of_1d == 2:
-            return extent_x + extent_y
+            (left, right) = extent_x
+            (bottom, top) = extent_y
+        return (left, right, bottom, top)
     return None
+
 
 source_strength = 1e10/4  # n/s
 statepoint_file = "statepoint.4.h5"

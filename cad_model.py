@@ -28,13 +28,9 @@ lead_inner = (
     .cylinder(height_lead, inner_radius_lead, angle=rotation_angle)
     )
 
-
 lead = (
-    cq.Workplane("XY")
-    .workplane(offset=height_tank - height_lead/2)
-    .cylinder(height_lead, inner_radius_lead + lead_thickness, angle=rotation_angle)
-    .cut(lead_inner)
-    )
+    lead_inner.shell(lead_thickness, kind="intersection")
+)
 
 gas = (
     cq.Workplane("XY").workplane(offset=height_tank/2 + height_flibe/2)
@@ -49,7 +45,7 @@ flibe_cutter_1 = (
     .cylinder(height_flibe_cutter, thickness_flibe_cutter, angle=rotation_angle)
 )
 
-thickness_flibe_cutter2 = 1.2 + 2*thickness_inner_tank_wall + thickness_sweep_gas
+thickness_flibe_cutter2 = 1.5 + 2*thickness_inner_tank_wall + thickness_sweep_gas
 flibe_cutter_2 = (
     cq.Workplane("XY").workplane(offset=height_tank/2 - 2*thickness_inner_tank_wall)
     .cylinder(height_flibe + height_gas, thickness_flibe_cutter2, angle=rotation_angle)
@@ -99,6 +95,7 @@ flibe = flibe.cut(gas)
 inner_tank_wall = inner_tank_wall.cut(cutter_x_zero).cut(cutter_y_zero)
 liner_gas = liner_gas.cut(cutter_x_zero).cut(cutter_y_zero)
 outer_tank_wall = outer_tank_wall.cut(cutter_x_zero).cut(cutter_y_zero)
+lead = lead.cut(cutter_x_zero).cut(cutter_y_zero)
 
 cq.exporters.export(inner_tank_wall, 'inner_tank_wall.stl')
 cq.exporters.export(outer_tank_wall, 'outer_tank_wall.stl')

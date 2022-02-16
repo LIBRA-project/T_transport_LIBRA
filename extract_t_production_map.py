@@ -1,8 +1,10 @@
 import openmc
 from scipy import interpolate
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 import matplotx
 import numpy as np
+import scipy.ndimage as ndimage
 
 
 def reshape_values_to_mesh_shape(tally, values):
@@ -58,7 +60,7 @@ def get_tally_extent(tally):
     return None
 
 
-def interpolate_tally(tally):
+def interpolate_tally(tally, sigma=3.0):
     data = tally.get_pandas_dataframe()
     mean = np.array(data["mean"])*source_strength
     mean = reshape_values_to_mesh_shape(tally, mean)
@@ -70,6 +72,9 @@ def interpolate_tally(tally):
     # get centers of row and column
     centers_x = (mesh.r_grid[1:] + mesh.r_grid[:-1]) / 2
     centers_y = (mesh.z_grid[1:] + mesh.z_grid[:-1]) / 2
+
+    mean = ndimage.gaussian_filter(mean, sigma=sigma, order=0)
+    # TODO divide by cells volumes
 
     # too heavy for big arrays
     # https://stackoverflow.com/questions/63668864/scipy-interpolate-interp2d-do-i-really-have-too-many-data-points?rq=1
@@ -97,8 +102,8 @@ with plt.style.context(matplotx.styles.dufte):
     plt.gca().set_title("Real")
     matplotx.ylabel_top("Z [cm]")
     plt.xlabel("X [cm]")
-    image_map = plt.imshow(mean, extent=get_tally_extent(t_prod_cyl), origin="lower", cmap="Purples", zorder=1)
-    plt.scatter(0.1, 75)
+    image_map = plt.imshow(mean, extent=get_tally_extent(t_prod_cyl), origin="lower", zorder=1, norm=LogNorm(vmin=1000), cmap='Purples')
+    plt.scatter(0.1, 66)
 
     # plot interpolated data
     plt.sca(axs[1])
@@ -106,10 +111,13 @@ with plt.style.context(matplotx.styles.dufte):
     plt.xlabel("X [cm]")
     x_new = np.linspace(0, 50, 600)
     y_new = np.linspace(0, 110, 600)
-    z = interpolate_tally(t_prod_cyl)(x_new, y_new)
-    plt.contourf(x_new, y_new, z, levels=np.linspace(0, mean.max(), 100), cmap='Purples')
-    plt.contour(x_new, y_new, z, levels=np.linspace(1000, mean.max(), 5), colors="tab:grey", alpha=0.3)
-    plt.scatter(0.1, 75)
+    xx, yy = np.meshgrid(x_new, y_new)
+    z = interpolate_tally(t_prod_cyl, sigma=5)(x_new, y_new)
+    levels = np.logspace(2, np.log10(z.max()), 1000)
+    z.reshape(y_new.size, x_new.size)
+    plt.contourf(xx, yy, z, levels=levels, norm=LogNorm(vmin=1000), cmap='Purples')
+    plt.contour(xx, yy, z, levels=5, colors="tab:grey", alpha=0.3)
+    plt.scatter(0.1, 66)
     # plt.colorbar(image_map, ax=axs.ravel().tolist())
     plt.gca().set_aspect('equal')
 

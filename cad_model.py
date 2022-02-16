@@ -13,7 +13,7 @@ thickness_sweep_gas = 0.005*1e2
 
 flibe_thickness = 0.5*1e2
 
-inner_radius_lead = 0.1*1e2
+inner_radius_lead = 0.07*1e2
 lead_thickness = 0.05*1e2
 height_lead = 0.6*1e2
 

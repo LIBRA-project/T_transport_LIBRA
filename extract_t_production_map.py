@@ -1,6 +1,7 @@
 import openmc
 from scipy import interpolate
 import matplotlib.pyplot as plt
+import matplotx
 import numpy as np
 
 
@@ -57,42 +58,60 @@ def get_tally_extent(tally):
     return None
 
 
+def interpolate_tally(tally):
+    data = tally.get_pandas_dataframe()
+    mean = np.array(data["mean"])*source_strength
+    mean = reshape_values_to_mesh_shape(tally, mean)
+
+    # # Interpolate data
+
+    mesh = tally.find_filter(filter_type=openmc.MeshFilter).mesh
+
+    # get centers of row and column
+    centers_x = (mesh.r_grid[1:] + mesh.r_grid[:-1]) / 2
+    centers_y = (mesh.z_grid[1:] + mesh.z_grid[:-1]) / 2
+
+    # too heavy for big arrays
+    # https://stackoverflow.com/questions/63668864/scipy-interpolate-interp2d-do-i-really-have-too-many-data-points?rq=1
+    # xx, yy = np.meshgrid(centers_x, centers_y)
+    f = interpolate.interp2d(centers_x, centers_y, mean, kind='linear')
+    return f
+
+
 source_strength = 1e10/4  # n/s
 statepoint_file = "statepoint.4.h5"
 
 # loads up the statepoint file with simulation results
 statepoint = openmc.StatePoint(filepath=statepoint_file)
-
 t_prod_cyl = statepoint.get_tally(name="(n,Xt)_cylindrical")
-data = t_prod_cyl.get_pandas_dataframe()
-mean = np.array(data["mean"])*source_strength
+
+mean = np.array(t_prod_cyl.get_pandas_dataframe()["mean"])*source_strength
 mean = reshape_values_to_mesh_shape(t_prod_cyl, mean)
 
-# # Interpolate data
 
-mesh = t_prod_cyl.find_filter(filter_type=openmc.MeshFilter).mesh
+with plt.style.context(matplotx.styles.dufte):
+    fig, axs = plt.subplots(1, 2, sharey=True, sharex=True)
 
-# get centers of row and column
-centers_x = (mesh.r_grid[1:] + mesh.r_grid[:-1]) / 2
-centers_y = (mesh.z_grid[1:] + mesh.z_grid[:-1]) / 2
+    # plot real data
+    plt.sca(axs[0])
+    plt.gca().set_title("Real")
+    matplotx.ylabel_top("Z [cm]")
+    plt.xlabel("X [cm]")
+    image_map = plt.imshow(mean, extent=get_tally_extent(t_prod_cyl), origin="lower", cmap="Purples", zorder=1)
+    plt.scatter(0.1, 75)
 
-# too heavy for big arrays
-# https://stackoverflow.com/questions/63668864/scipy-interpolate-interp2d-do-i-really-have-too-many-data-points?rq=1
-# xx, yy = np.meshgrid(centers_x, centers_y)
-f = interpolate.interp2d(centers_x, centers_y, mean, kind='linear')
+    # plot interpolated data
+    plt.sca(axs[1])
+    plt.gca().set_title("Interpolated")
+    plt.xlabel("X [cm]")
+    x_new = np.linspace(0, 50, 600)
+    y_new = np.linspace(0, 110, 600)
+    z = interpolate_tally(t_prod_cyl)(x_new, y_new)
+    plt.contourf(x_new, y_new, z, levels=np.linspace(0, mean.max(), 100), cmap='Purples')
+    plt.contour(x_new, y_new, z, levels=np.linspace(1000, mean.max(), 5), colors="tab:grey", alpha=0.3)
+    plt.scatter(0.1, 75)
+    # plt.colorbar(image_map, ax=axs.ravel().tolist())
+    plt.gca().set_aspect('equal')
 
-fig, axs = plt.subplots(1, 2)
-
-# plot real data
-plt.sca(axs[0])
-image_map = plt.imshow(mean, extent=get_tally_extent(t_prod_cyl), origin="lower", cmap="Purples")
-
-# plot interpolated data
-plt.sca(axs[1])
-x_new = mesh.r_grid
-y_new = mesh.z_grid
-z = f(x_new, y_new)
-plt.contourf(x_new, y_new, z, levels=np.linspace(0, mean.max(), 100), cmap='Purples')
-plt.colorbar(image_map, ax=axs.ravel().tolist())
-plt.gca().set_aspect('equal')
-plt.savefig('real_vs_interpolated.png')
+    plt.tight_layout()
+    plt.savefig('real_vs_interpolated.png')

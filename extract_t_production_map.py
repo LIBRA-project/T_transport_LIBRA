@@ -52,6 +52,7 @@ def get_tally_extent(tally):
             return extent_x + extent_y
     return None
 
+source_strength = 1e10/4  # n/s
 statepoint_file = "statepoint.4.h5"
 
 # loads up the statepoint file with simulation results
@@ -59,9 +60,8 @@ statepoint = openmc.StatePoint(filepath=statepoint_file)
 
 t_prod_cyl = statepoint.get_tally(name="(n,Xt)_cylindrical")
 data = t_prod_cyl.get_pandas_dataframe()
-mean = np.array(data["mean"])
+mean = np.array(data["mean"])*source_strength
 mean = reshape_values_to_mesh_shape(t_prod_cyl, mean)
-
 
 # # Interpolate data
 
@@ -76,18 +76,18 @@ centers_y = (mesh.z_grid[1:] + mesh.z_grid[:-1]) / 2
 # xx, yy = np.meshgrid(centers_x, centers_y)
 f = interpolate.interp2d(centers_x, centers_y, mean, kind='linear')
 
+fig, axs = plt.subplots(1, 2)
 
 # plot real data
+plt.sca(axs[0])
 image_map = plt.imshow(mean, extent=get_tally_extent(t_prod_cyl), origin="lower", cmap="Purples")
-plt.colorbar()
-plt.savefig("real_data.png")
 
 # plot interpolated data
+plt.sca(axs[1])
 x_new = mesh.r_grid
 y_new = mesh.z_grid
 z = f(x_new, y_new)
-plt.figure()
 plt.contourf(x_new, y_new, z, levels=np.linspace(0, mean.max(), 100), cmap='Purples')
-plt.colorbar()
+plt.colorbar(image_map, ax=axs.ravel().tolist())
 plt.gca().set_aspect('equal')
-plt.savefig('interpolated_data.png')
+plt.savefig('real_vs_interpolated.png')

@@ -101,3 +101,49 @@ cq.exporters.export(inner_tank_wall, 'inner_tank_wall.stl')
 cq.exporters.export(outer_tank_wall, 'outer_tank_wall.stl')
 cq.exporters.export(lead, 'lead.stl')
 cq.exporters.export(flibe, 'flibe.stl')
+
+parts = [inner_tank_wall, outer_tank_wall, lead, flibe]
+tags = ['inner_tank_wall', 'outer_tank_wall', 'lead', 'flibe']
+
+def export_brep(shapes, path_filename):
+    import OCP
+
+    bldr = OCP.BOPAlgo.BOPAlgo_Splitter()
+
+    for shape in shapes:
+        # checks if solid is a compound as .val() is not needed for compunds
+        if isinstance(shape, cq.occ_impl.shapes.Compound):
+            bldr.AddArgument(shape.wrapped)
+        else:
+            bldr.AddArgument(shape.val().wrapped)
+
+    bldr.SetNonDestructive(True)
+
+    bldr.Perform()
+
+    bldr.Images()
+
+    merged = cq.Compound(bldr.Shape())
+
+    merged.exportBrep(str(path_filename))
+
+export_brep(parts, "geom.brep")
+
+from brep_to_h5m import brep_to_h5m
+import brep_part_finder as bpf
+
+my_brep_part_properties = bpf.get_brep_part_properties('geom.brep')
+# print(my_brep_part_properties)
+id_to_tag = {parts.index(part)+1: tag for part, tag in zip(parts, tags)}
+print(id_to_tag)
+
+brep_to_h5m(
+    brep_filename='geom.brep',
+    volumes_with_tags=id_to_tag,
+    h5m_filename='dagmc.h5m',
+    min_mesh_size=0,
+    max_mesh_size=1,
+    mesh_algorithm=1,
+    delete_intermediate_stl_files=False,
+    write_stl_files_to_temp=False,
+)

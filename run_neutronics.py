@@ -5,14 +5,15 @@ import neutronics_material_maker as nmm
 import math
 import numpy as np
 
-my_h5m_filename = "dagmc_not_merged.h5m"
+# my_h5m_filename = "dagmc_not_merged.h5m"
+my_h5m_filename = "dagmc.h5m"
 
 # materials
 material_tag_to_material_dict = {
-    "lead": "Lead",
-    "flibe": nmm.Material.from_library(name="FLiBe", enrichment=90, temperature=650+273.15, pressure=1e5, temperature_to_neutronics_code=False),
-    "inner_tank_wall": "SS_316L_N_IG",
-    "outer_tank_wall": "SS_316L_N_IG",
+    "mat_lead": "Lead",
+    "mat_flibe": nmm.Material.from_library(name="FLiBe", enrichment=90, temperature=650+273.15, pressure=1e5, temperature_to_neutronics_code=False),
+    "mat_inner_tank_wall": "SS_316L_N_IG",
+    "mat_outer_tank_wall": "SS_316L_N_IG",
 }
 
 materials = odw.Materials(
@@ -53,7 +54,7 @@ tallies = openmc.Tallies([t_prod, t_prod_cyl, heating, tbr, heating_cyl])
 settings = odw.FusionSettings()
 settings.batches = 4
 settings.particles = 1000
-settings.source = ops.FusionPointSource(fuel="DT", coordinate=(5, 5, 50))
+settings.source = ops.FusionPointSource(fuel="DT", coordinate=(0.1, 0.1, 75))
 
 
 my_model = openmc.Model(

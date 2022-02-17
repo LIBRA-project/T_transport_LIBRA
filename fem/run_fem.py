@@ -1,3 +1,6 @@
+from sources.interpolate_sources import t_source
+from custom_source import InterpolatedSource
+
 import FESTIM as F
 
 mesh = F.MeshFromXDMF("fe_mesh/mesh_domains.xdmf", "fe_mesh/mesh_boundaries.xdmf")
@@ -15,6 +18,7 @@ materials = F.Materials([
 
 sources = [
     F.Source(1e10, id_flibe, "solute")
+    # InterpolatedSource(t_source, id_flibe, "solute")  # doesn't work til FESTIM issue #367 is fixed
 ]
 
 boundary_conditions = [

@@ -84,18 +84,20 @@ cutter_x_zero = (
     .box(500, 500, 500)
 )
 
-cutter_y_zero = (
+cutter_2 = (
     cq.Workplane("ZY")
-    .workplane(offset=500/2)    
+    # rotate the workplane according to the rotation_angle
+    .transformed(rotate=cq.Vector(-90+rotation_angle, 0, 0))
+    .workplane(offset=500/2)
     .box(500, 500, 500)
 )
 
 flibe = flibe.cut(gas)
 
-inner_tank_wall = inner_tank_wall.cut(cutter_x_zero).cut(cutter_y_zero)
-liner_gas = liner_gas.cut(cutter_x_zero).cut(cutter_y_zero)
-outer_tank_wall = outer_tank_wall.cut(cutter_x_zero).cut(cutter_y_zero)
-lead = lead.cut(cutter_x_zero).cut(cutter_y_zero)
+inner_tank_wall = inner_tank_wall.cut(cutter_x_zero).cut(cutter_2)
+liner_gas = liner_gas.cut(cutter_x_zero).cut(cutter_2)
+outer_tank_wall = outer_tank_wall.cut(cutter_x_zero).cut(cutter_2)
+lead = lead.cut(cutter_x_zero).cut(cutter_2)
 
 cq.exporters.export(inner_tank_wall, 'inner_tank_wall.stl')
 cq.exporters.export(outer_tank_wall, 'outer_tank_wall.stl')

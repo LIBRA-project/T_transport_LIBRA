@@ -115,3 +115,28 @@ stl_to_h5m(
     h5m_filename='dagmc_not_merged.h5m',
 )
 
+parts = [inner_tank_wall, flibe]
+
+def export_brep(shapes, path_filename):
+    import OCP
+
+    bldr = OCP.BOPAlgo.BOPAlgo_Splitter()
+
+    for shape in shapes:
+        # checks if solid is a compound as .val() is not needed for compunds
+        if isinstance(shape, cq.occ_impl.shapes.Compound):
+            bldr.AddArgument(shape.wrapped)
+        else:
+            bldr.AddArgument(shape.val().wrapped)
+
+    bldr.SetNonDestructive(True)
+
+    bldr.Perform()
+
+    bldr.Images()
+
+    merged = cq.Compound(bldr.Shape())
+
+    merged.exportBrep(str(path_filename))
+
+export_brep(parts, "geom.brep")

@@ -8,7 +8,9 @@ class InterpolatedExpression(UserExpression):
         self.f = f
 
     def eval(self, value, x):
-        value[0] = self.f(*x)
+        r = (x[0]**2 + x[1]**2)**0.5
+        z = x[2]
+        value[0] = self.f(r, z)
 
     def value_shape(self):
         # scalar value

@@ -57,6 +57,10 @@ sim = F.Simulation(
 
 sim.initialise()
 
+
+# import fenics as f
+# f.XDMFFile("results/tritium_source.xdmf").write(f.project(tritium_source.value, sim.h_transport_problem.V_DG1))
+
 sim.run()
 
 # STEP 2

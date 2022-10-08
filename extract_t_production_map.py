@@ -80,6 +80,10 @@ def interpolate_tally(tally, sigma=3.0):
     centers_x = (mesh.r_grid[1:] + mesh.r_grid[:-1]) / 2
     centers_y = (mesh.z_grid[1:] + mesh.z_grid[:-1]) / 2
 
+    np.savetxt("fem/sources/t_production/x.txt", centers_x)
+    np.savetxt("fem/sources/t_production/y.txt", centers_y)
+    np.savetxt("fem/sources/t_production/mean.txt", mean)
+
     mean = ndimage.gaussian_filter(mean, sigma=sigma, order=0)
 
     # too heavy for big arrays
